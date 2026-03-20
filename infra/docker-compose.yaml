@@ -1,0 +1,50 @@
+services:
+    app:
+        build:
+            context: ..
+            dockerfile: infra/docker/Dockerfile
+        container_name: php-event-pipeline-reference-app
+        working_dir: /app
+        volumes:
+            - ../app:/app
+            - ../tests:/app/tests
+            - ../storage:/storage
+        depends_on:
+            rabbitmq:
+                condition: service_healthy
+        env_file:
+            - ./env/.env
+
+    worker:
+        build:
+            context: ..
+            dockerfile: infra/docker/Dockerfile
+        container_name: php-event-pipeline-reference-worker
+        command: php cli.php worker
+        working_dir: /app
+        volumes:
+            - ../app:/app
+            - ../storage:/storage
+        depends_on:
+            rabbitmq:
+                condition: service_healthy
+        env_file:
+            - ./env/.env
+        restart: on-failure
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        restart: unless-stopped
+        volumes:
+            - rabbitmq-data:/var/lib/rabbitmq
+        container_name: php-event-pipeline-reference-rabbitmq
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        healthcheck:
+            test: ["CMD", "rabbitmq-diagnostics", "ping"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+volumes:
+    rabbitmq-data:

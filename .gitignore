@@ -1,0 +1,7 @@
+/.idea
+/app/.phpunit.result.cache
+/app/.phpunit.cache
+/infra/env/.env
+/app/vendor/
+/app/.php-cs-fixer.cache
+/storage/sqlite/*.sqlite
